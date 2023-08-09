@@ -90,7 +90,7 @@ class _ToDoListState extends State<ToDoList> {
     );
   }
 
-  Widget buildItem(context, index) {
+  Widget buildItem(BuildContext context, int index) {
     return Dismissible(
       background: Container(
         color: Colors.red,
@@ -114,11 +114,35 @@ class _ToDoListState extends State<ToDoList> {
         },
         title: Text(_toDoList[index]["title"]),
         secondary: CircleAvatar(
+          backgroundColor: Colors.white,
           child: Icon(
             _toDoList[index]["ok"] ? Icons.check : Icons.error,
           ),
         ),
       ),
+      onDismissed: (direction) {
+        setState(() {
+          _lastRemoved = Map.from(_toDoList[index]);
+          _lastRemovedPosition = index;
+          _toDoList.removeAt(index);
+
+          _saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa \" ${_lastRemoved["title"]} \" removida"),
+            action: SnackBarAction(
+                label: "Desfazer",
+                onPressed: () {
+                  setState(() {
+                    _toDoList.insert(_lastRemovedPosition, _lastRemoved);
+                    _saveData();
+                  });
+                }),
+            duration: const Duration(seconds: 2),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snack);
+        });
+      },
     );
   }
 
