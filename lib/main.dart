@@ -43,6 +43,22 @@ class _ToDoListState extends State<ToDoList> {
     });
   }
 
+  Future<void> _refresh() async {
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      _toDoList.sort((a, b) {
+        if (a["ok"] && !b["ok"]) {
+          return 1;
+        } else if (!a["ok"] && b["ok"]) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+      _saveData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -78,12 +94,13 @@ class _ToDoListState extends State<ToDoList> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(top: 10),
-                itemCount: _toDoList.length,
-                itemBuilder: buildItem,
-              ),
-            )
+                child: RefreshIndicator(
+                    onRefresh: _refresh,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(top: 10),
+                      itemCount: _toDoList.length,
+                      itemBuilder: buildItem,
+                    )))
           ],
         ),
       ),
@@ -140,6 +157,7 @@ class _ToDoListState extends State<ToDoList> {
                 }),
             duration: const Duration(seconds: 2),
           );
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(snack);
         });
       },
